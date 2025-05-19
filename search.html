@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="projstyle.css"/>
+
+        <script type="module">
+            import {createClient} from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+            const SUPABASE_URL = 'https://kpucxjzngvleaenwkicc.supabase.co';
+            const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdWN4anpuZ3ZsZWFlbndraWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2MTA3ODAsImV4cCI6MjA2MzE4Njc4MH0.5HtV89np6fJLNPA3SaPC4Nh2bas7hwxVryP94zQuLzw';
+            const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+            window.supabase = supabase;
+        </script>
+
+    </head>
+    <body>
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="meal_logo.png" alt="Logo">
+                </div>
+                <ul class="navlinks">
+                    <li><a href="homepage.html">Home</a></li>
+                    <li><a href="saved.html">Saved</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="help.html">Help</a></li>
+                </ul>
+
+                <div class="nav-right">
+                    <form class="searchbar" onsubmit="searchMeals(); return false;">
+                        <input type="text" id="searchinput" placeholder="Search Here">
+                        <button type="submit">Enter</button>
+                    </form>
+                    <a href="user.html" class="usericon">
+                        <img src="user_icon.png" alt="User Icon">
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="resultscontainer">
+            <h1>Search Results</h1>
+            <div id="results" class="results"></div>
+        </main>
+
+        <script>
+            function searchMeals() {
+                const query = document.getElementById('searchinput').value.trim();
+                if(query){
+                    window.location.href=`search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+
+            async function loadResults() {
+                const params = new URLSearchParams(window.location.search);
+                const query = params.get("query");
+                const results = document.getElementById("results");
+                results.innerHTML = "<p>Loading...</p>";
+
+                try {
+                    const[mealsRes, ingredientRes] = await Promise.all([
+                        fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`),
+                        fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?i=${query}`)
+                    ]);
+
+                    const mealsData = await mealsRes.json();
+                    const ingredientsData = await ingredientRes.json();
+
+                    results.innerHTML = "";
+
+                    if(mealsData.meals) {
+                        mealsData.meals.forEach(meal => {
+                            const mealCard = document.createElement("div");
+                            mealCard.classList.add("mealcard");
+                            mealCard.innerHTML = `
+                                <img src ="${meal.strMealThumb}" alt="${meal.strMeal}" />
+                                <h3>${meal.strMeal}</h3>
+                                <button onclick="saveMealCombo('${meal.idMeal}', '${meal.strMeal}', '${meal.strMealThumb}')">Save</button>
+                                `;
+                            results.appendChild(mealCard);
+                        });
+                    }
+
+                    if(ingredientsData.meals && ingredientsData.meals.length > 0) {
+                        ingredientsData.meals.forEach(meal => {
+                            const ingCard = document.createElement("div");
+                            ingCard.classList.add("mealcard");
+                            ingCard.innerHTML = `
+                                <img src ="${meal.strMealThumb}" alt="${meal.strMeal}" />
+                                <h3>${meal.strMeal}</h3>
+                                <button onclick="saveMealCombo('${meal.idMeal}', '${meal.strMeal}', '${meal.strMealThumb}')">Save</button>
+                                `;
+                            results.appendChild(ingCard);
+                        });
+                    }
+
+                    if(!mealsData.meals && (!ingredientsData.meals || ingredientsData.meals.length === 0)) {
+                        results.innerHTML = "<p>No results found.</p>";
+                    }
+                } catch(error){
+                    results.innerHTML = `<p>Error loading data.</p>`;
+                    console.error("Error fetching data: ", error);
+                }
+            }
+
+            function saveMeal(id) {
+                let saved = JSON.parse(localStorage.getItem("savedMeals")) || [];
+                if(!saved.includes(id)) {
+                    saved.push(id);
+                    localStorage.setItem("savedMeals", JSON.stringify(saved));
+                    alert("Meal Saved!");
+                } else{
+                    alert("Meal already saved.");
+                }
+            }
+
+            async function saveToSupabase(mealID, mealName, mealThumb) {
+                const {data, error} = await window.supabase.from('saved_meals')
+                .insert([
+                    { 
+                        meal_id: mealID, 
+                        meal_name: mealName, 
+                        meal_image: mealThumb
+                    }
+                ]);
+                if(error) {
+                    console.error("Supabase insert error:", error);
+                    alert('Error saving meal:' + error.message);
+                } else {
+                    console.log("Supabase insert success:", data);
+                    alert('Meal saved to Supabase!');
+                }
+            }
+
+            function saveMealCombo(id, name, image) {
+            saveMeal(id);
+            saveToSupabase(id, name, image);
+            }
+
+            window.onload = loadResults;
+        </script>
+    </body>
+</html>

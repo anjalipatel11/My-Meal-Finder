@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="projstyle.css"/> 
+    </head>
+    <body>
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="meal_logo.png" alt="Logo">
+                </div>
+                <ul class="navlinks">
+                    <li><a href="homepage.html">Home</a></li>
+                    <li><a href="saved.html">Saved</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="help.html">Help</a></li>
+                </ul>
+
+                <div class="nav-right">
+                    <form class="searchbar" onsubmit="searchMeals(); return false;">
+                        <input type="text" id="searchinput" placeholder="Search Here">
+                        <button type="submit">Enter</button>
+                    </form>
+                    <a href="user.html" class="usericon">
+                        <img src="user_icon.png" alt="User Icon">
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+            <main class="helppage">
+                <h1>Help</h1>
+                <div class="helpcontent">
+                    <div class="helplogo">
+                        <img src="meal_logo.png" alt="App Logo"/>
+                    </div>
+                    <div class="home_ss">
+                        <img src="home_ss.png" alt="Home Page Screenshot"/>
+                    </div>
+                    <div class="help_instruct">
+                        <p>Start by searching your desired ingredient or meal in the search bar.
+                            The home page will show random meals and ingredients based on your preferences.
+                            Add user preferences by clicking on the user icon in the top right corner.
+                            <br>
+                            After submitting your search, look amongst the results for whatever meal or ingredients interest you. You can view the meals' ingredient list and save them to your collection (which can be viewed in the "Saved" page).
+                        </p>
+                    </div>
+                </div>
+            </main>
+
+        <script>
+            function searchMeals() {
+                const query = document.getElementById('searchinput').value.trim();
+                if(query){
+                    window.location.href=`search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+        </script>
+    </body>    
+</html>
+    

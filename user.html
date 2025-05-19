@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="projstyle.css"/> 
+    </head>
+
+    <body>
+        <header>
+            <nav class="navbar">
+                <div class="logo">
+                    <img src="meal_logo.png" alt="Logo">
+                </div>
+                <ul class="navlinks">
+                    <li><a href="homepage.html">Home</a></li>
+                    <li><a href="saved.html">Saved</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="help.html">Help</a></li>
+                </ul>
+
+                <div class="nav-right">
+                    <form class="searchbar" onsubmit="searchMeals(); return false;">
+                        <input type="text" id="searchinput" placeholder="Search Here">
+                        <button type="submit">Enter</button>
+                    </form>
+                    <a href="user.html" class="usericon">
+                        <img src="user_icon.png" alt="User Icon">
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <main class="userprofile">
+            <h1>User Profile</h1>
+            <form id="userform">
+                <label for="user_name">Name: </label>
+                <input type="text" id="userName" name="userName" required><br>
+
+                <label for="user_email">Email: </label>
+                <input type="email" id="userEmail" name="userEmail" required><br>
+
+                <label for="user_age">Age: </label>
+                <input type="number" id="userAge" name="userAge" min="1"><br>
+
+                <label for="user_diet">Dietary Restrictions: </label>
+                <input type="text" id="userDiet" name="userDiet"><br>
+
+                <button type="submit">Save</button>
+            </form>
+
+            <div id="userInfo" class="userInfo"></div>
+        </main>
+
+        <script>
+            function searchMeals() {
+                const query = document.getElementById('searchinput').value.trim();
+                if(query){
+                    window.location.href=`search.html?query=${encodeURIComponent(query)}`;
+                }
+            }
+
+            const form = document.getElementById('userform');
+            const userInfo = document.getElementById('userInfo');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const userInfo = {
+                    name: document.getElementById('userName').value,
+                    email: document.getElementById('userEmail').value,
+                    age: document.getElementById('userAge').value,
+                    diet: document.getElementById('userDiet').value
+                };
+
+                localStorage.setItem('userProfile', JSON.stringify(userInfo));
+                displayUserInfo();
+            });
+
+            function displayUserInfo() {
+                const stored = JSON.parse(localStorage.getItem('userProfile'));
+                if(stored) {
+                    userInfo.innerHTML = `
+                    <h2>Saved Info:</h2>
+                    <p><b>Name:</b>${stored.name}</p>
+                    <p><b>Email:</b>${stored.email}</p>
+                    <p><b>Age:</b>${stored.age}</p>
+                    <p><b>Dietary Restrictions:</b>${stored.diet}</p>
+                    `;
+                }
+            }
+            displayUserInfo();
+        </script>
+    </body>
+</html>
